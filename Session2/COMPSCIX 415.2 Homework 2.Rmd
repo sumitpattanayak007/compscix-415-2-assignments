@@ -11,127 +11,150 @@ knitr::opts_chunk$set(echo = TRUE)
 
 
 ## Exercise 3.2.4
-
+## 1
 ```{r}
 library(ggplot2)
-1
 ggplot(data = mpg)
 ```
-Output : Nothing is showing here, blank.
+
+##Output : Nothing is showing here, blank.
 
 
-2
+## 2
 
 ```{r}
 nrow(mpg)
 ncol(mpg)
 ```
 
-Output : No of Rows - 234
-Output : No of Colms - 11
+## Output : No of Rows - 234
+## Output : No of Colms - 11
 
-3
-f = front-wheel drive, r = rear wheel drive, 4 = 4wd
-f indicates whether the vehicle is front-wheel drive or rea wheel drive or 4 wheel drive
+## 3
+## f = front-wheel drive, r = rear wheel drive, 4 = 4wd
+## f indicates whether the vehicle is front-wheel drive or rea wheel drive or 4 wheel drive
 
 
-4
+## 4
 ```{r}
 ggplot(data = mpg) +
   geom_point(mapping = aes(x = hwy, y = cyl))
 ```
 
 
-5
+##5
 ```{r}
 ggplot(data = mpg) +
   geom_point(mapping = aes(x = class, y = drv))
 ```
 
-Points on the plot are overlapping with each other
+## Points on the plot are overlapping with each other
 
 ## Exercise 3.3.1
 ## 1
 
 ```{r}
-library(ggplot2)
 ggplot(data = mpg) + 
   geom_point(mapping = aes(x = displ, y = hwy, color = "blue"))
 ```
 ## Blue dots are showing Red as color argument was set within aes(), not geom_point()
 ## Correct code would be like below:
 
+```{r}
 ggplot(data = mpg) + 
   geom_point(mapping = aes(x = displ, y = hwy), color = "blue")
 
+```
+
 ## 2
+
+```{r}
 mpg
+```
 ## Categorical - manufacturer, model, trans, drv, fl, class
 ## Continuous - displ, cyl, cty, hwy
 ## Categorial - <chr>
 ## Continuous - <dbl> and <int>
 
-
 ## 3 - Map a continuous variable to color, size, and shape
 
 ## using color
+```{r}
 ggplot(data = mpg) +
   geom_point(mapping = aes(x = displ, y = hwy, color = cty))
+```
+
 
 ## using size
+```{r}
 ggplot(data = mpg) +
   geom_point(mapping = aes(x = displ, y = hwy, size = cty))
+```
+
 
 ## using shape
-## ggplot(data = mpg) +
+
+##```{r}
+##ggplot(data = mpg) +
 ##  geom_point(mapping = aes(x = displ, y = hwy, shape = cty))
+##```
 ## Error: A continuous variable can not be mapped to shape
 
 ##continuous variables are visualized on a spectrum
 ##categorical variables are binned into discrete categories
 
+
 ## 4 - What happens if you map the same variable to multiple aesthetics?
+```{r}
 ggplot(data = mpg) +
   geom_point(mapping = aes(x = displ, y = hwy, color = cty, size = cty))
-
+```
 ## Both aesthetics are implemented, but multiple legends are generated.
 
+
 ## 5 - What does the stroke aesthetic do? What shapes does it work with?  
+
+```{r}
 ggplot(data = mpg) +
   geom_point(mapping = aes(x = displ, y = hwy), stroke = 3, shape = 21)
+```
 ## stroke adjusts the thickness of the border for shapes that can take on different colors both inside and outside.
+
 
 ##6 - What happens if you map an aesthetic to something other than a variable name, like  aes(colour = displ < 5)?
 
+
+```{r}
 ggplot(data = mpg) +
   geom_point(mapping = aes(x = displ, y = hwy, color = displ < 5))
-
-## displ is temporary variable to hold the result whether True or False
 ```
 
+## displ is temporary variable to hold the result whether True or False
+
+
 ## Exercise 3.5.1
+## 4
 ```{r}
-library(ggplot2)
 ggplot(data = mpg) + 
   geom_point(mapping = aes(x = displ, y = hwy)) + 
   facet_wrap(~ class, nrow = 2)
+```
 
-## 4
 ## Advantage - Faceting splits the data into separate grids and better visualizes trends within each individual facet.
 ## Disadvantage - harder to visualize the overall relationship across facets
 ## The color aesthetic is fine when your dataset is small, but with larger datasets points may begin to overlap with one another. In this situation with a colored plot, jittering may not be sufficient because of the additional color aesthetic.
 
 ##5
+```{r}
 ?facet_wrap
+```
+
 ## nrow, ncol	- Number of rows and columns.
 ## as.table	- If TRUE, the default, the facets are laid out like a table with highest values at the bottom-right. If FALSE, the facets are laid out like a plot with the highest value at the top-right.
 ## in `facet_grid` nrow and ncol are implied by the faceting variables. `dir` also controls the placement of the individual panels, and so isn't an argument of `facet_grid`.
 
-```
 
 ## Exercise 3.6.1
-```{r}
-library(ggplot2)
 ## 1 - What geom would you use to draw a line chart? A boxplot? A histogram? An area chart?
 ## Line chart - geom_line()
 ## Boxplot - geom_boxplot()
@@ -139,9 +162,12 @@ library(ggplot2)
 ## Area chart - geom_area()
 
 ## 2
+
+```{r}
 ggplot(data = mpg, mapping = aes(x = displ, y = hwy, color = drv)) + 
   geom_point() + 
   geom_smooth(se = FALSE)
+```
 
 ## 3 - What does show.legend = FALSE do? What happens if you remove it? Why do you think I used it earlier in the chapter?
 ## It removes the legend. 
@@ -152,41 +178,61 @@ ggplot(data = mpg, mapping = aes(x = displ, y = hwy, color = drv)) +
 ## It determines whether or not to draw a confidence interval around the smoothing line.
 
 ## 5 - Will these two graphs look different? Why/why not?
+
+```{r}
 ggplot(data = mpg, mapping = aes(x = displ, y = hwy)) + 
   geom_point() + 
   geom_smooth()
+```
 
+```{r}
 ggplot() + 
   geom_point(data = mpg, mapping = aes(x = displ, y = hwy)) + 
   geom_smooth(data = mpg, mapping = aes(x = displ, y = hwy))
+```
+
+
 
 ## Answer -No because they use the same data and mapping settings. The only difference is that by storing it in the  ggplot() function, it is automatically reused for each layer.
 
 ## 6 - Recreate the R code necessary to generate the following graphs.
+
+```{r}
 ggplot(data = mpg, mapping = aes(x = displ, y = hwy)) + 
   geom_point() + 
   geom_smooth(se = FALSE)
+```
 
+```{r}
 ggplot(data = mpg, mapping = aes(x = displ, y = hwy)) + 
   geom_smooth(aes(group = drv), se = FALSE) +
   geom_point()
+```
 
+```{r}
 ggplot(data = mpg, mapping = aes(x = displ, y = hwy, color = drv)) + 
   geom_point() + 
   geom_smooth(se = FALSE)
+```
 
+```{r}
 ggplot(data = mpg, mapping = aes(x = displ, y = hwy)) + 
   geom_point(aes(color = drv)) + 
   geom_smooth(se = FALSE)
+```
 
+```{r}
 ggplot(data = mpg, mapping = aes(x = displ, y = hwy)) + 
   geom_point(aes(color = drv)) +
   geom_smooth(aes(linetype = drv), se = FALSE)
+```
 
+```{r}
 ggplot(data = mpg, mapping = aes(x = displ, y = hwy)) + 
   geom_point(size = 4, colour = "white") + 
   geom_point(aes(colour = drv))
 ```
+
 
 ## 3.7.1
 
