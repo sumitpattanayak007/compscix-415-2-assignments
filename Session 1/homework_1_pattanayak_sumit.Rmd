@@ -1,0 +1,57 @@
+---
+title: "COMPSCIX 415.2 Homework 1"
+author: "Sumit Pattanayak"
+date: "February 11, 2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+My Github repository for my assignments can be found at this URL: https://github.com/sumitpattanayak007/compscix-415-2-assignments.git
+
+```{r}
+library(mdsr)
+library(tidyverse)
+```
+
+```{r}
+data("WorldCities")
+###### Here is a glimpse of dataset:
+glimpse(WorldCities)
+```
+
+####Extract parts of the data
+
+```{r}
+WorldCities <- head(WorldCities, 200)
+country_col <- WorldCities$country
+unique(country_col)
+
+```
+
+###QUESTION 2: There is a column called region in the data set. Can you extract this and show only the unique values?
+
+```{r}
+reg <- WorldCities$region
+unique(reg)
+
+```
+
+##QUESTION 3: Can you extract and show the unique entries from the country column in WorldCities using one line of code and two %>% operators? The output will look like this:
+
+```{r}
+WorldCities %>% select(country) %>% unique()
+
+```
+
+```{r}
+WorldCities %>% ggplot(aes(x = population)) + geom_histogram()
+```
+
+###QUESTION 4: Make one more histogram of the population and add a new x-label, a new ylabel, a new title (use ggtitle('my title')), and change the theme of the plot using theme_bw().
+
+```{r}
+WorldCities %>% ggplot(aes(x = population)) + geom_histogram() + xlab('Population') + ylab('Freqency') + ggtitle('Histogram of Population of World Cities') + theme_bw()
+```
+
