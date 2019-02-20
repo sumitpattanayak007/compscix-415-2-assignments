@@ -1,0 +1,219 @@
+---
+title: "COMPSCIX 415.2 Homework 3"
+author: "Sumit Pattanayak"
+date: "February 20, 2019"
+output: html_document
+---
+
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+My Github repository for my assignments can be found at this URL: https://github.com/sumitpattanayak007/compscix-415-2-assignments.git
+
+## 3.8.1
+
+## Q1: What is the problem with this plot? How could you improve it?
+
+```{r}
+library(ggplot2)
+ggplot(data = mpg, mapping = aes(x = cty, y = hwy)) + 
+  geom_point()
+```
+
+Answer: Althought the two variables are continuous, the chance of being in a single point is very discrete and a lot of points overlap. We could fix it by adding jitter.
+
+```{r}
+ggplot(data = mpg, mapping = aes(x = cty, y = hwy)) + 
+  geom_point() +
+  geom_jitter()
+```
+
+## Q2: What parameters to geom_jitter() control the amount of jittering?
+
+Answer: `width` and `height`
+```{r}
+ggplot(data = mpg, mapping = aes(x = cty, y = hwy)) + 
+  geom_point() +
+  geom_jitter(width = 5, height = 10)
+```
+
+
+## Q3: Compare and contrast geom_jitter() with geom_count()
+
+```{r}
+ggplot(data = mpg, mapping = aes(x = cty, y = hwy)) + 
+  geom_point() +
+  geom_jitter()
+ggplot(data = mpg, mapping = aes(x = cty, y = hwy)) + 
+  geom_point() +
+  geom_count()
+```
+Answer: `geom_count()` is another variant of `geom_point()` and controls the size of each dot based on the frequency of observations in a specifiy coordinate. It can help to contrast with `geom_jitter()` in understanding the data.
+
+## Q4: What’s the default position adjustment for geom_boxplot()? Create a visualisation of the mpg dataset that demonstrates it.
+
+Answer: The default position for `geom_boxplot()` is `"dodge2"`, which is a shortcut for `position_dodge2`.
+
+```{r}
+ggplot(data = mpg, mapping = aes(x = class, y = displ)) + 
+  geom_boxplot(aes(colour = drv))
+```
+
+
+## 3.9.1
+
+## Q2:What does labs() do? Read the documentation.
+
+Answer: The `labs` function adds axis titles, plot titles and a caption to the plot. `labs()` allows you to control all the labels in the plot.
+Example:
+
+```{r}
+ggplot(mpg, aes(cyl, fill = as.factor(cyl))) +
+    geom_bar() +
+    labs(title = "This is the title section",
+         subtitle = "This is the sub-title",
+         x = "This is the X axis",
+         y = "This is the Y axis",
+         fill = "This is the fill",
+         caption = "This is a caption")
+```
+
+## Q4: What does the plot below tell you about the relationship between city and highway mpg? Why is coord_fixed() important? What does geom_abline() do?
+
+```{r}
+ggplot(data = mpg, mapping = aes(x = cty, y = hwy)) +
+  geom_point() + 
+  geom_abline() +
+  coord_fixed()
+```
+Answer: The function `coord_fixed()` ensures that the line produced by `geom_abline()` is at a 45-degree angle.
+A 45-degree line makes it easy to compare the highway and city mileage to the case in which city and highway MPG were equal.
+
+`geom_abline()` plots the estimated slope between the two variables
+
+
+### 4.4.1
+## Q1: Why does this code not work?
+
+```{r}
+my_variable <- 10
+my_variable
+my_varıable
+```
+
+Answer: The variable being assigned with '10' is not the variable we are printing.
+
+## Q2: Tweak each of the following R commands so that they run correctly:
+```{r}
+library(tidyverse)
+
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy))
+
+##fliter(mpg, cyl = 8)
+##filter(diamond, carat > 3)
+```
+
+Answer: TYPO in 'filter' and 'diamond
+##Correct Code:
+```{r}
+library(tidyverse)
+
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy))
+
+filter(mpg, cyl == 8)
+filter(diamonds, carat > 3)
+```
+
+## Q3: Press Alt + Shift + K. What happens? How can you get to the same place using the menus?
+
+Answer: This gives a menu with keyboard shortcuts. This can be found in the menu under "Tools > Keyboard Shortcuts help"
+
+
+### 4.4.2
+## Q1: Find all flights that 
+#Had an arrival delay of two or more hours
+```{r}
+library(nycflights13)
+filter(flights, arr_delay >= 120)
+```
+
+
+#Flew to Houston (IAH or HOU)
+```{r}
+filter(flights, dest == "IAH" | dest == "HOU")
+```
+
+
+#Were operated by United, American, or Delta
+```{r}
+filter(flights, carrier %in% c("AA", "DL", "UA"))
+```
+
+#Departed in summer (July, August, and September)
+```{r}
+filter(flights, month >= 7, month <= 9)
+```
+
+#Arrived more than two hours late, but didn’t leave late
+```{r}
+filter(flights, arr_delay > 120, dep_delay <= 0)
+```
+
+#Were delayed by at least an hour, but made up over 30 minutes in flight
+```{r}
+filter(flights, dep_delay >= 60, dep_delay - arr_delay > 30)
+```
+
+#Departed between midnight and 6am (inclusive)
+
+```{r}
+filter(flights, dep_time <= 600 | dep_time == 2400)
+```
+
+
+## Q3: How many flights have a missing dep_time? What other variables are missing? What might these rows represent?
+```{r}
+filter(flights, is.na(dep_time))
+```
+Answer: The arrival time (arr_time) is also missing for these rows. These seem to be cancelled flights.
+
+## Q4: Why is NA ^ 0 not missing? Why is NA | TRUE not missing? Why is FALSE & NA not missing? Can you figure out the general rule? (NA * 0 is a tricky counterexample!)
+
+Answer:
+NA ^ 0 == 1 for all numeric values.
+NA | TRUE is TRUE because the value of the missing TRUE or FALSE,  x  or TRUE is TRUE for all values of  x .
+Anything and FALSE is always FALSE.
+Because the value of the missing element matters in NA | FALSE and NA & TRUE, these are missing.
+
+
+### 5.4.1
+## Q1: Brainstorm as many ways as possible to select dep_time, dep_delay, arr_time, and arr_delay from flights.
+```{r}
+select(flights, dep_time, dep_delay, arr_time, arr_delay)
+```
+
+#Specify column names as strings.
+```{r}
+select(flights, "dep_time", "dep_delay", "arr_time", "arr_delay")
+```
+
+```{r}
+select(flights, one_of(c("dep_time", "dep_delay", "arr_time", "arr_delay")))
+```
+
+```{r}
+variables <- c("dep_time", "dep_delay", "arr_time", "arr_delay")
+select(flights, one_of(variables))
+```
+
+## Q3: What does the one_of() function do? Why might it be helpful in conjunction with this vector?
+Answer: The one_of() function selects variables with a character vector rather than unquoted variable name arguments. This function is useful because it is easier to programmatically generate character vectors with variable names than to generate unquoted variable names, which are easier to type.
+```{r}
+vars <- c("year", "month", "day", "dep_delay", "arr_delay")
+select(flights, one_of(vars))
+```
+
