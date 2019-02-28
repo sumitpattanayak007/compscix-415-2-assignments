@@ -1,0 +1,300 @@
+---
+title: "COMPSCIX 415.2 Homework 4"
+author: "Sumit Pattanayak"
+date: "February 26, 2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+My Github repository for my assignments can be found at this URL: https://github.com/sumitpattanayak007/compscix-415-2-assignments.git
+
+## 5.6.7 Exercises
+
+```{r}
+library(tidyverse)
+library(nycflights13)
+```
+## Q2: Come up with another approach that will give you the same output as not_cancelled %>% count(dest) and not_cancelled %>% count(tailnum, wt = distance) (without using count())
+
+
+```{r}
+
+not_cancelled <- filter(flights, !is.na(dep_delay), !is.na(arr_delay))
+not_cancelled %>%
+  group_by(dest) %>%
+  tally()
+```
+
+```{r}
+not_cancelled %>%
+  group_by(tailnum) %>%
+  summarise(n = sum(distance))
+```
+
+
+
+## Q4: Look at the number of cancelled flights per day. Is there a pattern? Is the proportion of cancelled flights related to the average delay?
+```{r}
+flights %>%
+  group_by(day) %>%
+  summarise(cancelled = mean(is.na(dep_delay)),
+            mean_dep = mean(dep_delay, na.rm = T),
+            mean_arr = mean(arr_delay, na.rm = T)) %>%
+  ggplot(aes(y = cancelled)) +
+  geom_point(aes(x = mean_dep), colour = "red") +
+  geom_point(aes(x = mean_arr), colour = "blue") +
+  labs(x = "Avg delay per day", y = "Cancelled flights p day")
+```
+It looks like there is a positive relationship. The higher the average delay of the day, the higher the proportion of cancelled flights per day.
+
+## Q5: Which carrier has the worst delays? 
+```{r}
+flights %>%
+  group_by(carrier) %>%
+  summarise(dep_max = max(dep_delay, na.rm = T),
+            arr_max = max(arr_delay, na.rm = T)) %>%
+  arrange(desc(dep_max, arr_max)) %>%
+  filter(1:n() == 1)
+```
+
+##Challenge: can you disentangle the effects of bad airports vs. bad carriers? Why/why not? (Hint: think about flights %>% group_by(carrier, dest) %>% summarise(n()))
+
+It can be possible. For example, if I take the average departure delay for each carrier and then compute the deviations over the overall carrier mean from each airport mean, perhaps we can find something out. If the overall mean is, let's say, 25 mins, and then each deviation is ± 1 or 2, then it could be that the airline is bad or that every single bad. I know, it might be more likely that the airline is bad, but we can't be 100% sure. On the other hand, if the overall carrier mean is high and the deviations are all lower except for 1 or 2 airports then the effect is probably the airport effect.
+
+```{r}
+flights %>%
+  summarise(n_car = n_distinct(carrier),
+            n_air = n_distinct(dest),
+            n_or = n_distinct(origin))
+flights %>%
+  group_by(carrier) %>%
+  mutate(avg_carrier = mean(dep_delay, na.rm = T)) %>%
+  group_by(carrier, origin) %>%
+  mutate(origin_mean = mean(dep_delay, na.rm = T),
+         deviations = origin_mean - avg_carrier) %>%
+  summarise(deviations = mean(deviations), mean = mean(avg_carrier)) %>%
+  ggplot(aes(origin, deviations)) + geom_col() + facet_wrap(~ carrier)
+```
+
+```{r}
+flights %>%
+  group_by(carrier, dest) %>%
+  summarise(mean_departure = mean(dep_delay, na.rm = T),
+            mean_arrival = mean(arr_delay, na.rm = T))
+```
+
+```{r}
+flights %>%
+    mutate(dep_date = time_hour) %>%
+    group_by(tailnum) %>%
+    arrange(dep_date) %>%
+    mutate(cumulative = !cumany(arr_delay > 60)) %>%
+    filter(cumulative == T) %>%
+    tally(sort = TRUE)
+```
+
+```{r}
+flights %>%
+  group_by(tailnum) %>%
+  arrange(time_hour) %>%
+  mutate(cum = arr_delay > 60,
+         cum_any = cumsum(cum)) %>%
+  filter(cum_any < 1) %>%
+  tally(sort = TRUE)
+```
+
+## Q5: What does the sort argument to count() do. When might you use it?
+```{r}
+flights %>%
+  count(flight, sort = T)
+```
+
+## 10.5 Exercises
+
+## Q1: How can you tell if an object is a tibble? 
+
+This function returns TRUE for tibbles or subclasses thereof, and FALSE for all other objects, including regular data frames.
+
+When we print `mtcars`, it prints all the columns.
+
+```{r}
+mtcars
+```
+
+But when we first convert `mtcars` to a tibble using `as_tibble()`, it prints on the
+first ten observations.
+
+```{r}
+as_tibble(mtcars)
+```
+
+```{r}
+class(mtcars)
+```
+
+## Q2: Compare and contrast the following operations on a data.frame and equivalent tibble. What is different? Why might the default data frame behaviours cause you frustration?
+
+## Using data.frame
+```{r}
+df <- data.frame(abc = 1, xyz = "a")
+df$x
+df[, "xyz"]
+df[, c("abc", "xyz")]
+```
+
+## Using Tibble
+```{r}
+tbl <- as_tibble(df)
+tbl$x
+tbl[, "xyz"]
+tbl[, c("abc", "xyz")]
+```
+
+
+Using `$` a data.frame will partially complete the column. So even though we
+wrote `df$x` it returned `df$xyz`. This saves a few keystrokes, but can result
+in accidentally using a different variable.
+
+With data.frames, with `[` the type of object that is returned differs on the
+number of columns. If it is one column, it won't return a data.frame, but
+instead will return a vector. With more than one column, then it will return a
+data.frame. 
+
+## Q3: If you have the name of a variable stored in an object, e.g. var <- "mpg", how can you extract the reference variable from a tibble?
+
+We have to use double bracket, like `df[[var]]`. We can't use the dollar sign because `df$var` would look for a column named `var`.
+
+## Q6: What option controls how many additional column names are printed at the footer of a tibble?
+Answer: The help page for the `print()` method of tibble objects is discussed in `?print.tbl_df`.
+The `n_extra` argument determines the number of extra columns to print information for.
+
+
+
+## 12.3.3 Exercise
+
+
+## Q2: Why does this code fail?
+##```{r error=TRUE}
+##table4a %>%
+##  gather(1999, 2000, key = "year", value = "cases")
+##```
+The code fails because the column names `1999` and `2000` are not non-syntactic variable names.
+
+Correct Code: 
+```{r}
+table4a %>%
+  gather(`1999`, `2000`, key = "year", value = "cases")
+```
+
+## Q3: Why does spreading this tibble fail? How could you add a new column to fix the problem?
+```{r}
+people <- tribble(
+  ~name, ~key, ~value,
+  #-----------------|--------|------
+  "Phillip Woods",  "age", 45,
+  "Phillip Woods", "height", 186,
+  "Phillip Woods", "age", 50,
+  "Jessica Cordero", "age", 37,
+  "Jessica Cordero", "height", 156
+)
+glimpse(people)
+```
+
+We could solve the problem by adding a row with a distinct observation count for each combination of name and key.
+```{r}
+people2 <- people %>%
+  group_by(name, key) %>%
+  mutate(obs = row_number())
+people2
+```
+
+or by keeping only distinct rows of the name and key values, and dropping duplicate rows.
+```{r}
+people %>%
+  distinct(name, key, .keep_all = TRUE) %>%
+  spread(key, value)
+```
+## Q4: Tidy the simple tibble below. Do you need to spread or gather it? What are the variables?
+To tidy the `preg` tibble, we need to use `gather()`. 
+The variables in this data are:
+
+-   `sex` ("female", "male")
+-   `pregnant` ("yes", "no")
+-   `count`, which is a non-negative integer representing the number of observations.
+```{r}
+preg <- tribble(
+  ~pregnant, ~male, ~female,
+  "yes", NA, 10,
+  "no", 20, 12
+)
+```
+
+```{r}
+preg_tidy2 <- preg %>%
+  gather(male, female, key = "sex", value = "count", na.rm = TRUE)
+preg_tidy2
+```
+
+## 12.4.3 Exercises
+
+## Q1: What do the extra and fill arguments do in separate()? Experiment with the various options for the following two toy datasets.
+```{r}
+tibble(x = c("a,b,c", "d,e,f,g", "h,i,j")) %>%
+  separate(x, c("one", "two", "three"))
+tibble(x = c("a,b,c", "d,e", "f,g,i")) %>%
+  separate(x, c("one", "two", "three"))
+```
+
+The `extra` argument tells `separate()` what to do if there are too many pieces, and the `fill` argument tells it what to do if there aren't enough.
+By default, `separate()` drops extra values with a warning.
+```{r}
+tibble(x = c("a,b,c", "d,e,f,g", "h,i,j")) %>%
+  separate(x, c("one", "two", "three"))
+```
+
+Adding the argument, `extra = "drop"`, produces the same result as above but without the warning.
+```{r}
+tibble(x = c("a,b,c", "d,e,f,g", "h,i,j")) %>%
+  separate(x, c("one", "two", "three"), extra = "drop")
+```
+
+Setting `extra = "merge"`, then the extra values are not split, so `"f,g"` appears in column three.
+```{r}
+tibble(x = c("a,b,c", "d,e,f,g", "h,i,j")) %>%
+  separate(x, c("one", "two", "three"), extra = "merge")
+```
+
+## Q2: Both `unite()` and `separate()` have a `remove` argument. What does it do? Why would you set it to `FALSE`?
+
+The `remove` argument discards input columns in the result data frame. You would set it to `FALSE` if you want to create a new variable, but keep the old one.
+
+
+
+
+##### Download the baby_names.txt file and load this file into R correctly and take a glimpse of the output.
+
+```{r}
+library(tidyverse)
+file_path <- "C:/Users/Sumit/Documents/compscix-415-2-assignments/Session 4/baby_names.txt"
+my_data <- read_csv(file=file_path)
+glimpse(my_data)
+
+write.csv(my_data, file = "baby_names.csv")
+```
+
+
+#### Export text file into CSV and call it ‘baby_names.csv’.
+
+```{r}
+write.csv(my_data, file = "baby_names.csv")
+```
+
+### Reload the baby_names.csv file and take another glimpse.
+```{r}
+file_path <- "C:/Users/Sumit/Documents/compscix-415-2-assignments/Session 4/baby_names.csv"
+csv_data <- read_csv(file = file_path)
+glimpse(csv_data)
+```
+
