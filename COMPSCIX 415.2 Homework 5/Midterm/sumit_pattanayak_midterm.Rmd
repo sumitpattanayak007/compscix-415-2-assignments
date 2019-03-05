@@ -1,0 +1,212 @@
+---
+title: "COMPSCIX 415.2 Homework 5/Midterm"
+author: "Sumit Pattanayak"
+date: "March 4, 2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+My Github repository for my assignments can be found at this URL: https://github.com/sumitpattanayak007/compscix-415-2-assignments.git
+
+
+##The tidyverse packages
+##---------------------------------------------------------------------------------
+##Q1.Can you name which package is associated with each task below? 
+Plotting 
+Data munging/wrangling 
+Reshaping (speading and gathering) data 
+Importing/exporting data 
+
+##Answer:
+Plotting - ggplot
+Data munging/wrangling - tidyr
+Reshaping (speading and gathering) data - tidyr
+Importing/exporting data - readr in tidyverse
+
+##Q2.Now can you name two functions that you’ve used from each package that you listed above for these tasks?
+
+##Answer:
+Plotting - ggplot - geom_boxplot & geom_point
+Data munging/wrangling - tidyr - count & mutate
+Reshaping (speading and gathering) data - tidyr - gather & spread
+Importing/exporting data - readr in tidyverse - read_xxx & write_xxx
+
+##R Basics
+##---------------------------------------------------------------------------------
+##Q1. Fix this code with the fewest number of changes possible so it works:
+My_data.name___is.too00ooLong! <- c( 1 , 2 , 3 )
+
+##Answer:
+```{r}
+My_data.name___is.too00ooLong <- c( 1 , 2 , 3 )
+My_data.name___is.too00ooLong
+```
+
+##Q2. Fix this code so it works:
+my_string <- C('has', 'an', 'error', 'in', 'it)
+
+```{r}
+my_string <- c('has', 'an', 'error', 'in', 'it')
+my_string
+```
+
+##Q3.  Look at the code below and comment on what happened to the values in the vector. 
+my_vector <- c(1, 2, '3', '4', 5) my_vector
+ [1] "1" "2" "3" "4" "5"
+ 
+ Answer: All the values are converted to Character by c().
+ 
+##Data import/export (3 points)
+##---------------------------------------------------------------------------------
+##Q1: Download the rail_trail.txt ﬁle from Canvas (in the Midterm Exam section) and successfully import it into R. Prove that it was imported successfully by including your import code and taking a glimpse of the result.
+```{r}
+library(tidyverse)
+file_path <- "C:/Users/Sumit/Documents/compscix-415-2-assignments/COMPSCIX 415.2 Homework 5/Midterm/rail_trail.txt"
+rail_trail <- read_delim(file = file_path, delim = "|")
+```
+```{r}
+glimpse(rail_trail)
+```
+
+##Q2. Export the ﬁle into a comma-separated ﬁle and name it “rail_trail.csv”. Make sure you deﬁne the path correctly so that you know where it gets saved. Then reload the ﬁle. Include your export and import code and take another glimpse
+```{r}
+write.csv(rail_trail, file = "rail_trail.csv")
+
+file_path <- "C:/Users/Sumit/Documents/compscix-415-2-assignments/COMPSCIX 415.2 Homework 5/Midterm/rail_trail.csv"
+csv_data <- read_csv(file = file_path)
+
+glimpse(csv_data)
+```
+
+##Visualization:
+##---------------------------------------------------------------------------------
+##Q1. Critique this graphic: give only three examples of what is wrong with this graphic. Be concise.
+
+##Answer:
+Dataset for each category is incomplete.
+Comparative graph would have been better.
+Categories with gender would be more prominent.
+
+##Q2. Reproduce this graphic using the diamonds data set.
+```{r}
+library(tidyverse)
+ggplot(data = diamonds, mapping = aes(factor(cut), carat, fill =  color)) + 
+  geom_boxplot(position = "identity") +
+  xlab ("CARAT OF DIAMOND") +
+  ylab ("CUT OF DIAMOND") +
+  coord_flip()
+```
+
+
+##Q3:The previous graphic is not very useful. We can make it much more useful by changing one thing about it. Make the change and plot it again
+
+```{r}
+library(tidyverse)
+ggplot(data = diamonds, mapping = aes(factor(cut), carat, fill =  color)) + 
+  geom_boxplot() +
+  xlab ("CARAT OF DIAMOND") +
+  ylab ("CUT OF DIAMOND") +
+  coord_flip()
+```
+
+##Data munging and wrangling
+##---------------------------------------------------------------------------------
+##Q1.1. Is this data “tidy”? If yes, leave it alone and go to the next problem. If no, make it tidy.
+```{r}
+table2
+```
+
+##Answer: The data is not Tidy. Here is my try to make it tidy.
+```{r}
+table2 %>%
+    spread(key = type, value = count)
+```
+##Q2. Create a new column in the diamonds data set called price_per_carat that shows the price of each diamond per carat (hint: divide). Only show me the code, not the output.
+
+##Answer:
+```{r}
+transmute (diamonds,
+  price_per_carat = price/carat)
+```
+
+##Q3. For each cut of diamond in the diamonds data set, how many diamonds, and what proportion, have a price > 10000 and a carat < 1.5? There are several ways to get to an answer, but your solution must use the data wrangling verbs from the tidyverse in order to get credit.
+
+```{r}
+diamonds %>%
+   filter(carat < 1.5 & price > 10000) %>%
+   count(cut) %>%
+   mutate(prop = n / sum(n)) %>%
+   print(n = 30)
+```
+
+• Do the results make sense? Why? 
+The reult does make sense as all the number in each catogory are increasing as per the cut.
+
+• Do we need to be wary of any of these numbers? Why?
+Categories of Diamond are not consistant. The price of Very Good and Premium are pretty close. 
+
+## EDA
+##---------------------------------------------------------------------------------
+Take a look at the txhousing data set that is included with the ggplot2 package and answer these questions:
+```{r}
+glimpse(txhousing)
+```
+
+#Q1: During what time period is this data from? 
+Answer: The data is from 2000 to 2015.
+
+#Q2: How many cities are represented?
+```{r}
+txhousing %>%
+  count(city)
+```
+Answer: There are 46 cities.
+
+#Q3. Which city, month and year had the highest number of sales?
+```{r}
+txhousing %>%
+  select(city,month,year,sales) %>%
+  group_by(city) %>%
+  filter(sales == max(sales))
+```
+##Answer:
+Houston has the highest sale in the month of July of 2015.
+
+#Q4. What kind of relationship do you think exists between the number of listings and the number of sales? Check your assumption and show your work
+
+#Q5. What proportion of sales is missing for each city?
+```{r}
+txhousing %>%
+   filter(is.na(sales)) %>%
+   count(city) %>%
+   mutate(prop = n / sum(n)) %>%
+   print(n = 30)
+```
+
+#Q6. Looking at only the cities and months with greater than 500 sales:
+```{r}
+txhousing %>%
+   filter(sales > 500) %>%
+   select(city, month, sales)
+```
+
+• Are the distributions of the median sales price (column name median), when grouped by city, diﬀerent? The same? Show your work. 
+
+```{r}
+txhousing %>%
+  filter(sales > 500) %>%
+  select(city, month, sales) %>%
+  group_by(city) %>%
+  summarise(
+    median = median(sales))
+```
+Answer: They are different.
+
+• Any cities that stand out that you’d want to investigate further? 
+
+Answer: Not in general.
+
+• Why might we want to ﬁlter out all cities and months with sales less than 500?
+Answer: Not sure. 
