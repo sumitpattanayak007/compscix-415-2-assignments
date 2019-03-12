@@ -1,0 +1,159 @@
+---
+title: "COMPSCIX 415.2 Homework 6"
+author: "Sumit Pattanayak"
+date: "March 10, 2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+My Github repository for my assignments can be found at this URL: https://github.com/sumitpattanayak007/compscix-415-2-assignments.git
+
+## Exercise 1:
+```{r}
+library(mosaicData)
+library(tidyverse)
+file_path <- "C:/Users/Sumit/Documents/compscix-415-2-assignments/Session6/Whickham.csv"
+csv_data <- read_csv(file=file_path)
+glimpse(csv_data)
+```
+
+##Q1: What variables are in this data set?
+
+3 variables - outcome, smoker, age
+
+##Q2: How many observations are there and what does each represent?
+
+In total 1314 observations are there.
+Each record represents a whether a person is smoker or not, his/her age and current outcome whether still Alive or Dead.
+
+##Q3. Create a table (use the R code below as a guide) and a visualization of the relationship between smoking status and outcome, ignoring age. What do you see? Does it make sense?
+
+```{r}
+glimpse(Whickham)
+```
+```{r}
+Whickham %>%
+  count(smoker, outcome)
+
+Whickham %>% ggplot(aes(x = smoker, y = outcome)) +geom_point()
+```
+
+Answer: This visualization doesn't make sense.
+
+
+##Q4: Recode the age variable into an ordered factor with three categories: age <= 44, age > 44 & age <=64, and age > 64. Now, recreate visualization from above, but facet on your new age factor. What do you see? Does it make sense?
+
+```{r}
+Whickham <- Whickham %>% mutate(age_fct = 
+                       factor(case_when(
+                         age <= 44 ~ '<44',
+                         age > 44 & age <= 64 ~'44-64', age > 64 ~ '>64'),   
+                     levels = c('<44', '44-64', '>64')))
+Whickham %>% ggplot(aes(x = smoker, fill = outcome)) +  geom_bar(position = 'fill')+labs(y = '') +  facet_wrap(~age_fct) + ggtitle("Age")
+```
+
+Answer: Now the visualization makes more sense.
+
+##Exercise 2:
+
+##Q1: Generate a random sample of size n = 10000 from a gamma(1,2) distribution and plot a histogram or density curve. Use the code below to help you get your sample
+
+```{r}
+library(tidyverse)
+n <- 10000
+gamma_samp <- tibble(x = rgamma(n, shape = 1, scale = 2))
+gamma_samp %>% ggplot() +
+ geom_histogram(aes(x = x)) + 
+ theme_bw()
+glimpse(gamma_samp)
+```
+
+##Q2: What is the mean and standard deviation of your sample?
+
+```{r}
+gamma_samp %>% .[['x']] %>% mean()
+gamma_samp %>% .[['x']] %>% sd()
+```
+
+Answer: 
+Mean = 1.994143
+Standard Deviation = 1.959265
+Yes, both are close to 2.
+
+##Q3. Pretend the distribution of our population of data looks like the plot above. Now take a sample of size n = 30 from a Gamma(1,2) distribution, plot the histogram or density curve, and calculate the mean and standard deviation.
+```{r}
+library(tidyverse)
+n <- 30
+gamma_samp_30 <- tibble(x = rgamma(n, shape = 1, scale = 2))
+glimpse(gamma_samp_30)
+
+gamma_samp_30 %>% ggplot() +
+ geom_histogram(aes(x = x)) + 
+ theme_bw()
+```
+
+Getting the Mean and SD:
+```{r}
+gamma_samp_30 %>% .[['x']] %>% mean()
+gamma_samp_30 %>% .[['x']] %>% sd()
+```
+
+Answer:
+Mean = 2.110961
+SD = 2.368907
+
+##Q4: Take a sample of size n = 30, again from the Gamma(1,2) distribution, calculate the mean, and assign it to a vector named mean_samp. Repeat this 10000 times!!!!
+```{r}
+mean_samp <- rep(NA, 10000)
+for(i in 1:10000) {
+  g_samp <- rgamma(30, shape = 1, scale = 2)
+  mean_samp[i] <- mean(g_samp)
+}
+mean_samp <- tibble(mean_samp)
+glimpse(mean_samp)
+
+```
+
+##Q5: Make a histogram of your collection of means from above (mean_samp)
+plotting the Histogram:
+```{r}
+mean_samp %>% 
+  ggplot() +
+  geom_histogram(aes(mean_samp))
+
+```
+
+##Q6: Calculate the mean and standard deviation of all of your sample means.
+getting Mean and SD:
+```{r}
+mean(mean_samp$mean_samp)
+sd(mean_samp$mean_samp)
+```
+
+Mean = 2.003368
+SD = 0.3629274
+
+##Q7. Did anything surprise you about your answers to #6?
+Satandard deviation is getting smaller when we take larger sample size. And this result is showing more accuracy as the SD should be as less as possible as we are generating SD from a sample of Means.
+
+##Q8. According to the Central Limit Theorem, the mean of your sampling distribution should be very close to 2, and the standard deviation of your sampling distribution should be close to 0.365. Repeat #4-#6, but now with a sample of size n = 300 instead. Do your results match up well with the theorem?
+
+```{r}
+mean_samp <- rep(NA, 10000)
+for(i in 1:10000) {
+  g_samp <- rgamma(300, shape = 1, scale = 2)
+  mean_samp[i] <- mean(g_samp)
+}
+mean_samp <- tibble(mean_samp)
+mean(mean_samp$mean_samp)
+sd(mean_samp$mean_samp)
+
+mean_samp %>% summarize(mean_samp_mean = mean(mean_samp), sd_samp_mean = sd(mean_samp))
+```
+
+The results of making the sample size n = 300 does not match up well with the theoretical results nor with the computed results of n = 30. The standard deviation was 0.12, less than half of the latter result. This result makes intuitive sense because with a larger sample size, a smaller standard deviation can be expected.
+
+
