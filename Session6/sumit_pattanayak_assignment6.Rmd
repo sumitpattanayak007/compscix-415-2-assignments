@@ -30,10 +30,6 @@ In total 1314 observations are there.
 Each record represents a whether a person is smoker or not, his/her age and current outcome whether still Alive or Dead.
 
 ##Q3. Create a table (use the R code below as a guide) and a visualization of the relationship between smoking status and outcome, ignoring age. What do you see? Does it make sense?
-
-```{r}
-glimpse(Whickham)
-```
 ```{r}
 Whickham %>%
   count(smoker, outcome)
@@ -79,8 +75,8 @@ gamma_samp %>% .[['x']] %>% sd()
 ```
 
 Answer: 
-Mean = 1.994143
-Standard Deviation = 1.959265
+Mean = 1.991998
+Standard Deviation = 1.995365
 Yes, both are close to 2.
 
 ##Q3. Pretend the distribution of our population of data looks like the plot above. Now take a sample of size n = 30 from a Gamma(1,2) distribution, plot the histogram or density curve, and calculate the mean and standard deviation.
@@ -102,8 +98,8 @@ gamma_samp_30 %>% .[['x']] %>% sd()
 ```
 
 Answer:
-Mean = 2.110961
-SD = 2.368907
+Mean = 1.893147
+SD = 1.768371
 
 ##Q4: Take a sample of size n = 30, again from the Gamma(1,2) distribution, calculate the mean, and assign it to a vector named mean_samp. Repeat this 10000 times!!!!
 ```{r}
@@ -133,8 +129,8 @@ mean(mean_samp$mean_samp)
 sd(mean_samp$mean_samp)
 ```
 
-Mean = 2.003368
-SD = 0.3629274
+Mean = 1.99945
+SD = 0.3695867
 
 ##Q7. Did anything surprise you about your answers to #6?
 Satandard deviation is getting smaller when we take larger sample size. And this result is showing more accuracy as the SD should be as less as possible as we are generating SD from a sample of Means.
