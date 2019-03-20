@@ -1,0 +1,150 @@
+---
+title: "COMPSCIX 415.2 Homework 7"
+author: "Sumit Pattanayak"
+date: "March 20, 2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+My Github repository for my assignments can be found at this URL: https://github.com/sumitpattanayak007/compscix-415-2-assignments.git
+
+
+```{r load_packages, warning=FALSE, message=FALSE}
+library(mdsr) 
+library(tidyverse)
+library(broom)
+```
+
+#Exercise 1:
+##Load the train.csv dataset into R. How many observations and columns are there?
+
+```{r}
+file_path <- "C:/Users/Sumit/Documents/compscix-415-2-assignments/Session7/train.csv"
+train_data <- read_csv(file=file_path)
+glimpse(train_data)
+```
+
+Answer:
+Observations: 1,460
+Columns: 81
+
+#Exercise 2:
+Normally at this point you would spend a few days on EDA, but for this homework we will do some very basic EDA and get right to fitting some linear regression models.
+
+##Q1: Visualize the distribution of SalePrice.
+```{r}
+train_data %>% 
+  ggplot() +
+  geom_histogram(aes(SalePrice)) 
+```
+
+##Q2: Visualize the covariation between SalePrice and Neighborhood.
+```{r}
+neighbour_price <- train_data %>% 
+  group_by(Neighborhood) %>%
+  summarise(SalePriceBar = median(SalePrice, na.rm = TRUE)) %>% 
+  arrange(desc(SalePriceBar))
+ggplot(neighbour_price) +
+  geom_col(aes(Neighborhood, SalePriceBar)) +
+  coord_flip()
+```
+
+##Q3: Visualize the covariation between SalePrice and OverallQual
+
+```{r}
+quality_price <- train_data %>% 
+  group_by(OverallQual) %>%
+  summarise(SalePriceBar = median(SalePrice, na.rm = TRUE))
+ggplot(quality_price) +
+  geom_col(aes(OverallQual, SalePriceBar)) +
+  coord_flip()
+```
+
+#Exercise 3:
+ Fit the model and then use the broom package
+ 
+##Q1: take a look at the coefficient
+```{r}
+(train.lm <- lm(formula = SalePrice ~ OverallQual, data = train_data))
+tidy(train.lm)
+```
+Answer: Coefficient is 45436.
+
+##Q2: compare the coefficient to the average value of SalePrice
+```{r}
+mean(train_data$SalePrice) 
+train.lm
+```
+Answer: Coeffiicient (45436) is much smaller than Average SalePrice (180921)
+
+##Q3: Take a look at the R-squared
+
+```{r}
+glance(train.lm)
+```
+Answer:  The R-squared is 0.6256519
+
+#Exercise 4:
+Now fit a linear regression model using GrLivArea, OverallQual, and Neighborhood as the features.
+
+```{r warning=FALSE}
+data(train_data)
+
+ggplot(train_data) +
+  geom_point(aes(GrLivArea, SalePrice), alpha = .15) +
+  geom_smooth(aes(GrLivArea, SalePrice), method = "lm", se = FALSE)
+
+ggplot(train_data) +
+  geom_point(aes(OverallQual, SalePrice), alpha = .15) +
+  geom_smooth(aes(OverallQual, SalePrice), method = "lm", se = FALSE)
+
+ggplot(train_data) +
+  geom_boxplot(aes(Neighborhood, SalePrice)) +
+  coord_flip()
+```
+
+##Q1: How would you interpret the coefficients on GrLivArea and OverallQual?
+
+Answer: For every unit of `GrLivArea` increased, the price increases by $55.56. For every unit increase of `OverallQual`, the sale price of the house increases by $20,951.
+
+```{r}
+houseprices_lm2 <- lm(formula= SalePrice ~ GrLivArea + OverallQual + Neighborhood, data = train_data)
+tidy(houseprices_lm2)
+glance(houseprices_lm2)
+```
+
+So the feature of OverallQual holds more weight over price increases than GrLivArea.
+
+##Q2: How would you interpret the coefficient on NeighborhoodBrkSide?
+Answer: A house in the neighborhood of Brookside, holding square footage and house quality constant, will cost about $13,025 less on average.
+
+##Q3: Are the features significant?
+Answer: The features of `OverallQual` and `GrLivArea` are significant values based on the p value. But only a handful of neighborhoods are, favoring the highest median priced neighborhoods. 
+
+##Q4. Are the features practically significant?
+Answer: It would seem that looking at `OverallQual` and `GrLivArea` would be conclusive indicators of correlation given the p value but one would have to comb the neighborhood data more diligently as many of the neighborhoods are not good indicators of sales price. 
+
+##Q5. Is the model a good fit?
+Answer: Because the adjusted R squared value is close to 1, the model is a good fit. 
+
+
+#Exercise 6:
+One downside of the linear model is that it is sensitive to unusual values because the distance incorporates a squared term. Fit a linear model to the simulated data below (use y as the target and x as the feature), and look at the resulting coefficients and R-squared. Rerun it about 5-6 times to generate different simulated datasets. What do you notice about the modelâs coefficient on x and the R-squared values?
+
+```{r}
+sim1a <- tibble(
+  x = rep(1:10, each = 3),
+  y = x * 1.5 + 6 + rt(length(x), df = 2)
+)
+sim1a
+(sim.lm <- lm(formula = y ~ x, data = sim1a))
+glance(sim.lm)
+ggplot(sim1a) +
+  geom_jitter(aes(x,y)) +
+  geom_smooth(aes(x, y), method = "lm", se = FALSE)
+```
+
+Answer: By looking at the coefficient on x, it is mostly stable, staying within the 1-2 range. The R squared value however would sometimes get smaller. Looking at a plot, one could see that when there is an outlying value, that will distort the R squared value significantly, making it seem like the model is not a good fit. 
+
