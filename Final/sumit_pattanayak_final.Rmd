@@ -1,0 +1,199 @@
+---
+title: "COMPSCIX 415.2 Homework 9/Final"
+author: "Sumit Pattanayak"
+date: "April 4, 2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r libraries, warning=FALSE, message=FALSE, echo=FALSE}
+library(tidyverse)
+library(broom)
+```
+
+#Exercise 1:
+## Sampling Distributions, Functions and For Loops
+
+###You can sample from this exponential distribution in R using this code:
+```{r}
+# sample size
+samp_size <- 100
+# set the rate parameter
+samp_rate <- 1/10000
+# take sample
+rexp(n = samp_size, rate = samp_rate)
+```
+
+
+##STEP 1
+*Write an R function that does the following:*
+
+*Takes a sample of size samp_size from this exponential distribution (samp_size is an input parameter for the function)*
+*Calculates the mean of that sample*
+*Calculates the standard deviation of that sample*
+*Returns the calculated mean and standard deviation as a list*
+
+```{r}
+samp_fun <- function(samp_size, samp_rate) {
+  exp_samp <- rexp(n = samp_size, rate = samp_rate)
+  samp_avg = mean(exp_samp)
+  samp_std_dev = sd(exp_samp)
+  stats <- list(samp_avg = samp_avg, samp_std_dev = samp_std_dev)
+return(stats)
+}
+```
+
+##STEP 2
+*Then write a loop that does this:*
+*• Runs the above function 1000 times, with samp_size = 50 and samp_rate = 1/10000*
+*• Saves all of the sample means in a vector called sample_means, and all of the sample standard deviations in a vector called sample_sds*
+```{r}
+n <- 1000
+samp_size = 50
+
+main_function <- function(n,samp_size){
+#empty vector for saving sample means and SDs
+  sample_means <- rep(NA, n)
+  sample_sds <- rep(NA, n)
+
+  for(i in 1:n) {
+    x <- samp_fun(samp_size, 1/10000) # save sample mean and sd
+    sample_means[i] <- x$samp_avg # add sample mean to vector
+    sample_sds[i] <- x$samp_std_dev # add sample sd to vector
+  }
+
+# save output in a tibble
+  exp_samp_df <- tibble(
+    sample_means, 
+    sample_sds
+  )
+return(exp_samp_df)
+}
+main_function(n,samp_size)
+```
+
+##STEP 3
+*Then*
+*• plot your sample means as a histogram*
+*• output the standard deviation of your sample means*
+*• calculate the theoretical standard error (σ = 10000, n = sample size)*
+*• calculate the mean of the sample standard deviations and use this to calculate the empirical standard error*
+*Plot the sample means*
+```{r}
+  exp_samp_df <- main_function(n,samp_size)
+  plot <- exp_samp_df %>% ggplot(aes(x = sample_means)) +
+  geom_histogram()
+  plot
+# Standard deviation of the sample means
+  sd_sample_means <- sd(exp_samp_df$sample_means)
+  sd_sample_means
+# Calculate the theoretical standard error
+  theo_sd_error <- 10000/sqrt(samp_size)
+  theo_sd_error
+# Calculate the mean of the sample standard deviations and use this to calculate the   empirical standard error
+  mean_sample_sd <- mean(exp_samp_df$sample_sds)/sqrt(samp_size)
+  mean_sample_sd
+```
+
+##STEP 4
+*Repeat STEP 2 and STEP 3 using a sample size of 5000*
+
+
+### for Sample size 5000
+```{r}
+#Step 2
+samp_size = 5000
+main_function(n,samp_size)
+#Step 3
+  exp_samp_df <- main_function(n,samp_size)
+  plot <- exp_samp_df %>% ggplot(aes(x = sample_means)) +
+  geom_histogram()
+  plot
+# Standard deviation of the sample means
+  sd_sample_means <- sd(exp_samp_df$sample_means)
+  sd_sample_means
+# Calculate the theoretical standard error
+  theo_sd_error <- 10000/sqrt(samp_size)
+  theo_sd_error
+# Calculate the mean of the sample standard deviations and use this to calculate the   empirical standard error
+  mean_sample_sd <- mean(exp_samp_df$sample_sds)/sqrt(samp_size)
+  mean_sample_sd
+```
+
+# Exercise 2:
+##Linear Regression
+
+```{r}
+# Load the train.csv dataset
+train_df_path <- 'C:/Users/Sumit/Documents/compscix-415-2-assignments/Final/train.csv'
+train_df <- read_csv(file = train_df_path)
+
+# Fit a regression model with y = SalePrice and use LotArea, OverallQual, and ExterQual as features
+sales_mult_lm <- lm(formula = SalePrice ~ LotArea + OverallQual + ExterQual, data = train_df)
+```
+
+*Answer these questions:*
+
+1. Use the broom package to output the coefficients and the R-squared
+```{r}
+library(broom)
+tidy(sales_mult_lm)
+glance(sales_mult_lm)
+```
+
+2. Interpret the coefficient on LotArea
+
+Answer: For every one unit increase in LotArea, the sale price increases, on average, by $1.45.
+
+3. Interpret the coefficient on ExterQualGd
+
+Answer: ExterQual is an unordered categorical variable, so the coefficient can be interpreted as a comparison to the first value in ExterQual. Therefore, the mean price difference between ExterQualGd and the first value (ExterQualEx) is -$71,529.
+
+4. Compare this model to the model we fit in HW 7 with GrLivArea, OverallQual, Neighborhood. Which is the better fitting model?
+
+Answer: The model we fit in HW 7 with GrLivArea, OverallQual, Neighborhood had an adjusted R-squared value of 0.78. Our model here does not fit as well, shown by the lower adjusted R-squared value of 0.69. Therefore the model fit for HW 7 is better.
+
+#Exercise 3:
+##AB Testing
+
+
+*Answer these questions:*
+
+1. What proportion of visitors converted for each version of the webpage?
+```{r}
+# Load the ab_test_data.csv dataset
+ab_test_df_path <- 'C:/Users/Sumit/Documents/compscix-415-2-assignments/Final/ab_test_data.csv'
+ab_test_df <- read_csv(file = ab_test_df_path)
+
+ab_test_df$conversion <- as.character(ab_test_df$conversion)
+
+ab_freq_df <- ab_test_df %>% count(version, conversion)
+
+ab_freq_df <- ab_freq_df %>% 
+  spread(key = conversion, value = n) %>%
+  rename(not_converted = '0', converted = '1') %>%
+  mutate(total = not_converted + converted,
+         prop_converted = converted/total,
+         perc_converted = paste0(round(prop_converted*100, 1), "%"))
+
+ab_freq_df
+```
+Answer: 4.2 percent of visitors converted for version A and 10 percent of visitors converted for version B.
+
+2. Perform the AB test in R. What is the p-value for the AB test (hypothesis test of proportions)?
+
+```{r}
+samp_a <- ab_freq_df %>% filter(version == "A") %>% select(converted)
+samp_a <- samp_a[[1]]
+samp_b <- ab_freq_df %>% filter(version == "B") %>% select(converted)
+samp_b <- samp_b[[1]]
+n_a = n_b = 2000
+
+two_prop_test <- prop.test(c(samp_a, samp_b), c(n_a, n_b))
+two_prop_test$p.value
+```
+
+Answer: The p-value is very small (less than 0.000), which tells us that the conversion rates for Version A and B are significantly different than each other.
